@@ -1,0 +1,22 @@
+{
+  "name": "brokenbot-discord",
+  "version": "1.0.0",
+  "description": "A Discord bot using Discordie",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidm-m/brokenbot-discord.git"
+  },
+  "author": "duranbong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidm-m/brokenbot-discord/issues"
+  },
+  "homepage": "https://github.com/davidm-m/brokenbot-discord#readme",
+  "dependencies": {
+    "discordie": "^0.11.0"
+  }
+}
