@@ -18,6 +18,7 @@ rl.on("line", (input) => {
 });
 
 var emotes;
+var responses;
 var testConfig = "./configWeeb.json";
 var config = "./configBroken.json";
 
@@ -54,11 +55,61 @@ bot.Dispatcher.on("GATEWAY_RESUMED", e => {
 
 reset();
 
+bot.Dispatcher.on("MESSAGE_CREATE", e => {
+	let prefix = "!";
+	if (e.message.author.bot) {
+		return; //don't respond to messages sent by bots
+	}
+	for (var key in responses.contains) {
+		if (e.message.content.includes(parseEmotes(key))) {
+			e.message.channel.sendMessage(parseEmotes(getRand(responses.contains[key])));
+		}
+	}
+	if (!e.message.content.startsWith(prefix)) {
+		return;
+	}
+	var message = e.message.content.substring(1);
+	if (responses.commands[message]) {
+		e.message.channel.sendMessage(responses.commands[message]);
+	}
+})
+
+function parseEmotes(data) {
+	var matchArr = data.match(/:[a-zA-Z]+:/g);
+	var cleaned = data;
+	if (!matchArr) {
+		return data;
+	}
+	var emoteArr = [];
+	for (var i = 0; i < matchArr.length - 1; i++) {
+		var found = false;
+		for (var j = 0; j < emoteArr.length; j++) {
+			if (matchArr[i] === emoteArr[j]) {
+				found = true;
+			}
+		}
+		if (found === false) {
+			emoteArr.push(matchArr[i]);
+		}
+	}
+	for (var i = 0; i < emoteArr.length; i++) {
+		if (emotes.emotes[emoteArr[i].slice(1,-1)]) {
+			var splitArr = cleaned.split(emoteArr[i]);
+			cleaned = splitArr.join(emotes.emotes[emoteArr[i].slice(1,-1)]);
+		}
+	}
+	return cleaned;
+}
+
 function reset() {
-	fs.readFile("./data/emotes.json","utf-8", (err, data) => {
+	fs.readFile("./data/emotes.json", "utf-8", (err, data) => {
 		if (err) throw err;
 		emotes = JSON.parse(data);
-	})
+	});
+	fs.readFile("./data/responses.json", "utf-8", (err, data) => {
+		if (err) throw err;
+		responses = JSON.parse(data);
+	});
 }
 
 function getRand(array) {
