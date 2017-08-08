@@ -2,3 +2,5 @@ node_modules
 configBroken.json
 configWeeb.json
 data
+music
+*.bat

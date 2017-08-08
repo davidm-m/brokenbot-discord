@@ -1,6 +1,6 @@
 {
   "name": "brokenbot-discord",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "A Discord bot using Discordie",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,7 @@
   "dependencies": {
     "discordie": "^0.11.0",
     "file-system": "^2.2.2",
-    "readline": "^1.3.0"
+    "readline": "^1.3.0",
+    "lame": "^1.2.4"
   }
 }
