@@ -21,6 +21,7 @@ rl.on("line", (input) => {
 let emotes;
 let responses;
 let music;
+let polls;
 let testConfig = "./configWeeb.json";
 let config = "./configBroken.json";
 
@@ -129,8 +130,103 @@ bot.Dispatcher.on("MESSAGE_CREATE", e => {
 			}
 		if (songName) {
 			return play(info,"music\\"+music[songName],e);
+		} else if (arg === null) {
+			return e.message.reply("try naming an actual song next time.");
 		} else {
 			return e.message.reply("I don't know that song.");
+		}
+	}
+	if (message.startsWith("poll")) {
+		let arg = message.slice(5);
+		if (arg === null) {
+			e.message.reply("I need more info than that");
+		} else if (arg.startsWith("create")) {
+			let createArr = arg.slice(7).split(", ");
+			let createObj = {name: createArr[0], options: [], users: []};
+			for (let i = 1; i < createArr.length; i++) {
+				createObj.options.push({name: createArr[i], votes: 0, users: []});
+			}
+			polls.push(createObj);
+			fs.writeFile("./data/polls.json", JSON.stringify(polls));
+			return displayPoll(createObj,e);
+		} else if (arg.startsWith("vote")) {
+			let voteArr = arg.slice(5).split(", ");
+			let pollIndex = -1;
+			for (let i = 0; i < polls.length; i++) {
+				if (polls[i].name.toLowerCase().indexOf(voteArr[0].toLowerCase()) >= 0) {
+					pollIndex = i;
+					break;
+				}
+			}
+			if (pollIndex === -1) {
+				return e.message.reply("that's not a poll!");
+			} else {
+				let voteIndex = -1;
+				for (let i = 0; i < polls[pollIndex].options.length; i++) {
+					if (polls[pollIndex].options[i].name.toLowerCase().indexOf(voteArr[1].toLowerCase()) >= 0) {
+						voteIndex = i;
+						break;
+					}
+				}
+				if (voteIndex === -1) {
+					return e.message.reply("that isn't an option on this poll!");
+				}
+				if (polls[pollIndex].users.indexOf(e.message.member.id) === -1) {
+					polls[pollIndex].users.push(e.message.member.id);
+					polls[pollIndex].options[voteIndex].votes++;
+					polls[pollIndex].options[voteIndex].users.push(e.message.member.id);
+					fs.writeFile("./data/polls.json", JSON.stringify(polls));
+					return e.message.channel.sendMessage("Vote counted");
+				} else {
+					let oldIndex;
+					for (let i = 0; i < polls[pollIndex].options.length; i++) {
+						oldIndex = polls[pollIndex].options[i].users.indexOf(e.message.member.id);
+						if (oldIndex !== -1) {
+							if (i === voteIndex) {
+								return e.message.reply("you've already voted for that!");
+							} else {
+								polls[pollIndex].options[i].users.splice(oldIndex, 1);
+								polls[pollIndex].options[i].votes--;
+								break;
+							}
+						}
+					}
+					polls[pollIndex].options[voteIndex].users.push(e.message.member.id);
+					polls[pollIndex].options[voteIndex].votes++;
+					fs.writeFile("./data/polls.json", JSON.stringify(polls));
+					return e.message.channel.sendMessage(`Changed vote from ${polls[pollIndex].options[oldIndex].name} to ${polls[pollIndex].options[voteIndex].name}.`);
+				}
+			}
+		} else if (arg.startsWith("view")) {
+			let pollName = arg.slice(5);
+			let pollIndex = -1;
+			for (let i = 0; i < polls.length; i++) {
+				if (polls[i].name.toLowerCase().indexOf(pollName.toLowerCase()) >= 0) {
+					pollIndex = i;
+					break;
+				}
+			}
+			if (pollIndex === -1) {
+				return e.message.reply("that's not a poll!");
+			} else {
+				return displayPoll(polls[pollIndex],e);
+			}
+		} else if (arg.startsWith("delete")) {
+			let pollName = arg.slice(7);
+			let pollIndex = -1;
+			for (let i = 0; i < polls.length; i++) {
+				if (polls[i].name.toLowerCase().indexOf(pollName.toLowerCase()) >= 0) {
+					pollIndex = i;
+					break;
+				}
+			}
+			if (pollIndex === -1) {
+				return e.message.reply("that's not a poll!");
+			} else {
+				polls.splice(pollIndex,1);
+				fs.writeFile("./data/polls.json", JSON.stringify(polls));
+				return e.message.channel.sendMessage("Poll deleted");
+			}
 		}
 	}
 	if (message === "songs") {
@@ -232,6 +328,15 @@ function parseEmotes(data) {
 	return cleaned;
 }
 
+function displayPoll(poll, event) {
+	let response = "Poll: " + poll.name + "\n\n";
+	for (let i = 0; i < poll.options.length; i++) {
+		response += poll.options[i].name + ": " + poll.options[i].votes.toString() + "\n";
+	}
+	response += "\nTotal votes: " + poll.users.length.toString();
+	event.message.channel.sendMessage(response);
+}
+
 function reset() {
 	fs.readFile("./data/emotes.json", "utf-8", (err, data) => {
 		if (err) throw err;
@@ -244,6 +349,10 @@ function reset() {
 	fs.readFile("./data/music.json", "utf-8", (err, data) => {
 		if (err) throw err;
 		music = JSON.parse(data);
+	});
+	fs.readFile("./data/polls.json", "utf-8", (err, data) => {
+		if (err) throw err;
+		polls = JSON.parse(data);
 	});
 }
 
