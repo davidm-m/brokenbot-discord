@@ -236,14 +236,14 @@ bot.Dispatcher.on("MESSAGE_CREATE", e => {
 
 		return e.message.channel.sendMessage("Here's the songs I know:\n" + songs);
 	}
-	if (message === "scream") {
+	if (message === "scream") {		//remove this block if forking brokenbot
 		if (!bot.VoiceConnections.length) {
       		return e.message.reply("this would work better if I were in a channel.");
     	}
     	let info = bot.VoiceConnections.getForGuild(e.message.guild);
     	return play(info,"music\\scream.mp3",e);
 	}
-	if (message === "gfg") {
+	if (message === "gfg") {	//remove this block if forking brokenbot
 		let mark = emotes.emotes[getRand(emotes.Mark)] + " ";
 		let dani = emotes.emotes[getRand(emotes.Dani)] + " ";
 		let scott = emotes.emotes[getRand(emotes.Scott)] + " ";
