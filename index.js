@@ -179,6 +179,7 @@ bot.Dispatcher.on("MESSAGE_CREATE", e => {
 					return e.message.channel.sendMessage("Vote counted");
 				} else {
 					let oldIndex;
+					let oldVote;
 					for (let i = 0; i < polls[pollIndex].options.length; i++) {
 						oldIndex = polls[pollIndex].options[i].users.indexOf(e.message.member.id);
 						if (oldIndex !== -1) {
@@ -187,6 +188,7 @@ bot.Dispatcher.on("MESSAGE_CREATE", e => {
 							} else {
 								polls[pollIndex].options[i].users.splice(oldIndex, 1);
 								polls[pollIndex].options[i].votes--;
+								oldVote = i;
 								break;
 							}
 						}
@@ -194,7 +196,7 @@ bot.Dispatcher.on("MESSAGE_CREATE", e => {
 					polls[pollIndex].options[voteIndex].users.push(e.message.member.id);
 					polls[pollIndex].options[voteIndex].votes++;
 					fs.writeFile("./data/polls.json", JSON.stringify(polls));
-					return e.message.channel.sendMessage(`Changed vote from ${polls[pollIndex].options[oldIndex].name} to ${polls[pollIndex].options[voteIndex].name}.`);
+					return e.message.channel.sendMessage(`Changed vote from ${polls[pollIndex].options[oldVote].name} to ${polls[pollIndex].options[voteIndex].name}.`);
 				}
 			}
 		} else if (arg.startsWith("view")) {
